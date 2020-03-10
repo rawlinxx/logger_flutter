@@ -4,20 +4,22 @@ class LogConsoleOnShake extends StatefulWidget {
   final Widget child;
   final bool dark;
   final bool debugOnly;
+  static bool darkMode;
 
   LogConsoleOnShake({
     @required this.child,
-    this.dark,
+    this.dark = true,
     this.debugOnly = true,
-  });
+  }) {
+    LogConsoleOnShake.darkMode = dark;
+  }
 
   @override
-  _LogConsoleOnShakeState createState() => _LogConsoleOnShakeState();
+  LogConsoleOnShakeState createState() => LogConsoleOnShakeState();
 }
 
-class _LogConsoleOnShakeState extends State<LogConsoleOnShake> {
-  ShakeDetector _detector;
-  bool _open = false;
+class LogConsoleOnShakeState extends State<LogConsoleOnShake> {
+  static bool _open = false;
 
   @override
   void initState() {
@@ -40,18 +42,17 @@ class _LogConsoleOnShakeState extends State<LogConsoleOnShake> {
 
   _init() {
     LogConsole.init();
-    _detector = ShakeDetector(onPhoneShake: _openLogConsole);
-    _detector.startListening();
   }
 
-  _openLogConsole() async {
+  static openLogConsole(BuildContext context) async {
     if (_open) return;
 
     _open = true;
 
     var logConsole = LogConsole(
       showCloseButton: true,
-      dark: widget.dark ?? Theme.of(context).brightness == Brightness.dark,
+      dark: LogConsoleOnShake.darkMode ??
+          Theme.of(context).brightness == Brightness.dark,
     );
     PageRoute route;
     if (Platform.isIOS) {
@@ -62,11 +63,5 @@ class _LogConsoleOnShakeState extends State<LogConsoleOnShake> {
 
     await Navigator.push(context, route);
     _open = false;
-  }
-
-  @override
-  void dispose() {
-    _detector.stopListening();
-    super.dispose();
   }
 }
